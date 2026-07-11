@@ -190,4 +190,29 @@ function getCounts(product) {
   return { total: row.total || 0, redeemed: row.redeemed || 0 };
 }
 
-module.exports = { db, stmts, redeemCode, importCode, getCounts, logAudit, hashIp, DATA_DIR };
+// Generischer Zähler in `meta` — genutzt vom n8n-Redeem-Pfad, der Codes nicht
+// mehr lokal speichert (die Google-Sheet-Sync via n8n ist dort die Wahrheit),
+// aber der Live-Zähler auf der Landingpage trotzdem einen Stand braucht.
+function getMetaCount(key) {
+  const row = stmts.metaGet.get(key);
+  return row ? Number(row.value) || 0 : 0;
+}
+
+function bumpMetaCount(key) {
+  const next = getMetaCount(key) + 1;
+  stmts.metaSet.run(key, String(next));
+  return next;
+}
+
+module.exports = {
+  db,
+  stmts,
+  redeemCode,
+  importCode,
+  getCounts,
+  logAudit,
+  hashIp,
+  DATA_DIR,
+  getMetaCount,
+  bumpMetaCount,
+};

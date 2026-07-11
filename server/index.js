@@ -13,7 +13,7 @@ const fs = require("node:fs");
 const zlib = require("node:zlib");
 const { randomBytes, timingSafeEqual } = require("node:crypto");
 
-const { stmts, redeemCode, importCode, getCounts, logAudit, DATA_DIR } = require("./db");
+const { stmts, redeemCode, importCode, getCounts, logAudit, DATA_DIR, getMetaCount, bumpMetaCount } = require("./db");
 const { PRODUCTS, getProduct, publicProducts } = require("./products");
 const { checkRedeemAttempt, failureDelay } = require("./ratelimit");
 const sheets = require("./sheets");
@@ -22,7 +22,65 @@ const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || "0.0.0.0";
 const TRUST_PROXY = process.env.TRUST_PROXY === "true";
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
+const N8N_REDEEM_WEBHOOK_URL = process.env.N8N_REDEEM_WEBHOOK_URL || "";
 const startedAt = Date.now();
+
+// --- n8n-Redeem-Pfad -----------------------------------------------------------
+// Alternative zum lokalen SQLite-Sheets-Sync (sheets.js): ein n8n-Workflow prüft
+// den Code direkt gegen ein Google Sheet und markiert ihn dort als eingelöst
+// (Sheet ist hier die Wahrheit, nicht die lokale DB). Nur aktiv, wenn die Env-Var
+// gesetzt ist — sonst läuft unverändert der bisherige lokale/Sheets-Sync-Pfad.
+async function redeemViaN8n(product, code, ip) {
+  let res;
+  try {
+    res = await fetch(N8N_REDEEM_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ product, code }),
+      signal: AbortSignal.timeout(8000),
+    });
+  } catch (err) {
+    logAudit("redeem_error", { product, code, ip, detail: `n8n unreachable: ${err.message}` });
+    return { ok: false, reason: "server_error" };
+  }
+
+  const data = await res.json().catch(() => null);
+  // Nur eine Antwort, die exakt unserem Vertrag entspricht (HTTP 2xx + boolesches
+  // "ok"), gilt als echte Geschäftslogik-Antwort. Alles andere (z. B. n8n gibt
+  // 404 zurück, weil der Workflow nicht aktiv ist) ist ein Server-/Config-Fehler
+  // — und darf dem Nutzer nie fälschlich als "Code unbekannt" angezeigt werden.
+  if (!res.ok || !data || typeof data.ok !== "boolean") {
+    logAudit("redeem_error", {
+      product,
+      code,
+      ip,
+      detail: `n8n unerwartete Antwort (HTTP ${res.status}): ${JSON.stringify(data).slice(0, 200)}`,
+    });
+    return { ok: false, reason: "server_error" };
+  }
+
+  if (data.ok) {
+    bumpMetaCount(`n8n_redeemed:${product}`);
+    logAudit("redeem_success", { product, code, ip, detail: data.redemptionId });
+    return {
+      ok: true,
+      redemptionId: data.redemptionId,
+      redeemedAt: data.redeemedAt || new Date().toISOString(),
+    };
+  }
+
+  const KNOWN_REASONS = new Set(["not_found", "already_redeemed"]);
+  const reason = KNOWN_REASONS.has(data.reason) ? data.reason : "server_error";
+  logAudit(
+    reason === "already_redeemed"
+      ? "redeem_already_redeemed"
+      : reason === "not_found"
+      ? "redeem_not_found"
+      : "redeem_error",
+    { product, code, ip, detail: reason === "server_error" ? `n8n unbekannter reason: ${data.reason}` : undefined }
+  );
+  return { ok: false, reason };
+}
 
 // --- Statische Dateien (in-memory, vorkomprimiert) ---------------------------
 
@@ -136,7 +194,9 @@ function productStatus(slug) {
   const cached = statusCache.get(slug);
   if (cached && Date.now() - cached.at < 5000) return cached.payload;
   const product = getProduct(slug);
-  const { total, redeemed } = getCounts(slug);
+  const { total, redeemed } = N8N_REDEEM_WEBHOOK_URL
+    ? { total: product.totalSlots, redeemed: getMetaCount(`n8n_redeemed:${slug}`) }
+    : getCounts(slug);
   const payload = {
     product: slug,
     totalSlots: product.totalSlots,
@@ -186,7 +246,9 @@ async function handleRedeem(req, res) {
 
   let result;
   try {
-    result = redeemCode(product.slug, code, ip);
+    result = N8N_REDEEM_WEBHOOK_URL
+      ? await redeemViaN8n(product.slug, code, ip)
+      : redeemCode(product.slug, code, ip);
   } catch (err) {
     console.error("[redeem] DB-Fehler:", err);
     logAudit("redeem_error", { product: product.slug, ip, detail: err.message });
@@ -232,6 +294,7 @@ const server = http.createServer(async (req, res) => {
         ok: dbOk,
         uptimeSeconds: Math.round((Date.now() - startedAt) / 1000),
         sheetsConfigured: sheets.isConfigured(),
+        n8nConfigured: Boolean(N8N_REDEEM_WEBHOOK_URL),
         lastSync: sheets.lastSyncInfo(PRODUCTS),
         pendingWritebacks: dbOk ? stmts.pendingWritebacks.get().n : null,
       });
