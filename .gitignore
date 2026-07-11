@@ -1,0 +1,4 @@
+# Secrets & lokale Daten — niemals committen
+.env
+data/
+service-account*.json

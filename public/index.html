@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sable — Der KI-Agent, der auf deinem Rechner bleibt</title>
+<meta name="description" content="Sable sieht deinen Bildschirm, versteht deine Aufgabe und schlägt die nächste Aktion vor — 100 % lokal, ohne Cloud. Limitierter Erstzugang: 100 Plätze. Code einlösen und sofort starten." />
+<meta property="og:title" content="Sable — Der KI-Agent, der auf deinem Rechner bleibt" />
+<meta property="og:description" content="100 % lokal. Keine Cloud. Keine Abos. Limitiert auf 100 Erstzugänge — löse deinen Code ein." />
+<meta property="og:type" content="website" />
+<meta name="theme-color" content="#0a0a0c" />
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+<a class="skip-link" href="#einloesen">Direkt zum Code-Einlösen</a>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="#top" aria-label="Sable — Startseite">
+      <span class="nav-orb" aria-hidden="true"></span>
+      <span class="nav-name">Sable</span>
+    </a>
+    <nav class="nav-links" aria-label="Hauptnavigation">
+      <a href="#produkt">Produkt</a>
+      <a href="#funktionen">Funktionen</a>
+      <a href="#ablauf">Ablauf</a>
+      <a href="#produkte">Produkte</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn btn-glass btn-nav" href="#einloesen">Code einlösen</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ═══════════════ HERO — Liquid Metal ═══════════════ -->
+  <section class="hero" aria-labelledby="hero-title">
+    <canvas id="metal" class="hero-metal" aria-hidden="true"></canvas>
+    <div class="hero-vignette" aria-hidden="true"></div>
+
+    <div class="hero-content reveal">
+      <p class="hero-badge">
+        <span class="badge-dot" aria-hidden="true"></span>
+        Limitierter Erstzugang&nbsp;·&nbsp;100&nbsp;Plätze
+      </p>
+
+      <h1 class="hero-title" id="hero-title">
+        Der KI-Agent, der auf<br />deinem Rechner bleibt.
+      </h1>
+
+      <p class="hero-sub">
+        Sable sieht deinen Bildschirm, versteht deine Aufgabe und schlägt die
+        nächste Aktion vor. Ein Tastendruck, eine Antwort&nbsp;—
+        <strong>100&nbsp;% lokal, keine Cloud, keine Abos.</strong>
+      </p>
+
+      <div class="hero-ctas">
+        <a class="btn btn-glass btn-primary" href="#einloesen">
+          <span>Code einlösen</span>
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="#produkt">Sable entdecken</a>
+      </div>
+
+      <ul class="hero-ticks" aria-label="Kernpunkte">
+        <li>Läuft offline</li>
+        <li>Handelt nur mit deinem Ja</li>
+        <li>Einmal zahlen, deins</li>
+      </ul>
+
+      <!-- Live-Zähler: wird nur angezeigt, wenn der echte Einlösestand
+           geladen werden konnte. Keine erfundene Knappheit. -->
+      <div class="scarcity" id="scarcity" hidden>
+        <div class="scarcity-bar" aria-hidden="true"><div class="scarcity-fill" id="scarcity-fill"></div></div>
+        <p class="scarcity-text"><span id="scarcity-count">–</span> von <span id="scarcity-total">100</span> Plätzen vergeben</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ PRODUKT-SHOWCASE — echte Sable-UI ═══════════════ -->
+  <section class="tile tile-dark" id="produkt" aria-labelledby="produkt-title">
+    <div class="tile-inner">
+      <h2 class="tile-title reveal" id="produkt-title">Ein Tastendruck.<br />Strg&nbsp;+&nbsp;Leertaste.</h2>
+      <p class="tile-lead reveal">
+        Sable legt sich als schwebende Glasleiste über deine Arbeit —
+        fragt, versteht, schlägt vor. Und verschwindet wieder.
+      </p>
+
+      <!-- Nachbau der echten Sable-Overlay-UI (Bar + Orb + Panel + Aktionskarte) -->
+      <div class="mockup reveal" role="img" aria-label="Sable-Overlay: Eingabeleiste mit Antwort-Panel und einer Aktionskarte, die auf Bestätigung per Enter wartet">
+        <div class="mockup-desktop" aria-hidden="true">
+          <div class="mock-window mock-window-a"><span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-dot"></span></div>
+          <div class="mock-window mock-window-b"></div>
+        </div>
+        <div class="mockup-overlay" aria-hidden="true">
+          <div class="mock-panel">
+            <p class="mock-msg mock-user">Benenne die Screenshots auf dem Desktop nach Datum</p>
+            <p class="mock-msg mock-ai">Ich sehe 14 Screenshots. Ich schlage vor, sie nach dem Muster <code>2026-07-10_1.png</code> umzubenennen.</p>
+            <div class="mock-action">
+              <span class="mock-action-icon">⚡</span>
+              <span class="mock-action-text">Aktion: Dateien umbenennen (14)</span>
+              <span class="mock-action-hint">Enter ausführen&nbsp;·&nbsp;Esc verwerfen</span>
+            </div>
+          </div>
+          <div class="mock-bar">
+            <span class="mock-orb"></span>
+            <span class="mock-input">Was soll ich tun?<span class="mock-caret"></span></span>
+            <span class="mock-trust">🔒 lokal</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="mockup-caption reveal">
+        Jede Aktion ist ein Vorschlag. Ausgeführt wird erst, wenn <em>du</em> Enter drückst.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ FUNKTIONEN ═══════════════ -->
+  <section class="tile tile-deep" id="funktionen" aria-labelledby="funktionen-title">
+    <div class="tile-inner">
+      <h2 class="tile-title reveal" id="funktionen-title">Gebaut wie ein Werkzeug.<br />Nicht wie ein Dienst.</h2>
+      <div class="features">
+        <article class="feature glass reveal">
+          <h3>100&nbsp;% lokal</h3>
+          <p>Das Sprachmodell läuft per Ollama auf deiner Hardware. Deine Bildschirminhalte verlassen den Rechner nicht.</p>
+        </article>
+        <article class="feature glass reveal">
+          <h3>Sieht, was du siehst</h3>
+          <p>Screenshot-Vision versteht Fenster, Text und Buttons — und beantwortet Fragen zu genau dem, was vor dir liegt.</p>
+        </article>
+        <article class="feature glass reveal">
+          <h3>Handelt nur mit deinem Ja</h3>
+          <p>Klick, Tippen, App öffnen: alles erscheint als Karte. Enter führt aus, Esc verwirft. Strukturell erzwungen, nicht nur versprochen.</p>
+        </article>
+        <article class="feature glass reveal">
+          <h3>Maus &amp; Tastatur</h3>
+          <p>Klicken, Doppelklick, Rechtsklick, Scrollen, Drag&nbsp;&amp;&nbsp;Drop, Tippen, Apps starten — dein Desktop, bedienbar per Sprache.</p>
+        </article>
+        <article class="feature glass reveal">
+          <h3>Online nur auf Wunsch</h3>
+          <p>Websuche ist opt-in. Sobald eine Anfrage das Gerät verlässt, zeigt Sable sichtbar 🌐 statt 🔒 — nie stillschweigend.</p>
+        </article>
+        <article class="feature glass reveal">
+          <h3>Audit-Log</h3>
+          <p>Jede ausgeführte Aktion wird lokal mit Zeitstempel protokolliert. Du kannst jederzeit nachlesen, was passiert ist.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ ABLAUF ═══════════════ -->
+  <section class="tile tile-dark" id="ablauf" aria-labelledby="ablauf-title">
+    <div class="tile-inner">
+      <h2 class="tile-title reveal" id="ablauf-title">In drei Minuten startklar.</h2>
+      <ol class="steps">
+        <li class="step glass reveal">
+          <span class="step-num" aria-hidden="true">1</span>
+          <h3>Code einlösen</h3>
+          <p>Deinen Zugangscode unten eingeben. Er ist genau einmal gültig — und danach fest deiner.</p>
+        </li>
+        <li class="step glass reveal">
+          <span class="step-num" aria-hidden="true">2</span>
+          <h3>Herunterladen</h3>
+          <p>Der Download-Link erscheint sofort nach der Einlösung, zusammen mit deiner Beleg-ID.</p>
+        </li>
+        <li class="step glass reveal">
+          <span class="step-num" aria-hidden="true">3</span>
+          <h3>Strg + Leertaste</h3>
+          <p>Sable starten, Hotkey drücken, erste Frage stellen. Kein Konto, keine Anmeldung, kein Warten.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ═══════════════ PRODUKTE (Multi-Produkt-Struktur) ═══════════════ -->
+  <section class="tile tile-deep" id="produkte" aria-labelledby="produkte-title">
+    <div class="tile-inner">
+      <h2 class="tile-title reveal" id="produkte-title">Produkte</h2>
+      <p class="tile-lead reveal">Sable ist das erste. Weitere folgen — jeweils limitiert, jeweils lokal-first.</p>
+      <div class="products reveal" id="products-grid">
+        <!-- wird aus /api/products gerendert; Fallback: statische Sable-Karte -->
+        <article class="product-card glass product-available">
+          <p class="product-status">Jetzt verfügbar</p>
+          <h3>Sable</h3>
+          <p class="product-tagline">Der KI-Agent, der auf deinem Rechner bleibt.</p>
+          <a class="btn btn-glass btn-small" href="#einloesen">Code einlösen</a>
+        </article>
+        <article class="product-card glass product-soon" aria-label="Weiteres Produkt in Arbeit">
+          <p class="product-status">In Arbeit</p>
+          <h3 class="product-placeholder" aria-hidden="true">████████</h3>
+          <p class="product-tagline">Wird hier angekündigt.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ VERTRAUEN ═══════════════ -->
+  <section class="tile tile-dark" id="vertrauen" aria-labelledby="vertrauen-title">
+    <div class="tile-inner tile-narrow">
+      <h2 class="tile-title reveal" id="vertrauen-title">Warum nur 100 Plätze?</h2>
+      <p class="trust-copy reveal">
+        Weil wir jeden Erstnutzer ernst nehmen wollen. Die erste Generation von
+        Sable geht an 100 Leute, deren Feedback direkt in die nächste Version
+        fließt. Der Zähler oben ist keine Marketing-Zahl — er wird live aus den
+        tatsächlich eingelösten Codes berechnet.
+      </p>
+      <ul class="trust-points reveal">
+        <li><strong>Keine Konten.</strong> Diese Seite kennt dich nicht und will dich nicht kennen. Kein Tracking, keine Cookies, keine Newsletter-Falle.</li>
+        <li><strong>Codes sind geschützt.</strong> Die Prüfung läuft serverseitig, ratenbegrenzt und wird protokolliert. Kein Code ist im Seitencode enthalten.</li>
+        <li><strong>Einmal ist einmal.</strong> Jeder Code lässt sich technisch garantiert nur ein einziges Mal einlösen — auch bei gleichzeitigen Versuchen.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════ CODE EINLÖSEN ═══════════════ -->
+  <section class="redeem" id="einloesen" aria-labelledby="redeem-title">
+    <div class="redeem-glow" aria-hidden="true"></div>
+    <div class="redeem-card glass-strong reveal">
+
+      <!-- Formular-Zustand -->
+      <div class="redeem-form-state" id="redeem-form-state">
+        <h2 class="redeem-title" id="redeem-title">Löse deinen Code ein.</h2>
+        <p class="redeem-sub">Einer von 100. Danach gehört Sable dir.</p>
+
+        <form id="redeem-form" novalidate>
+          <label class="redeem-label" for="code-input">Dein Zugangscode</label>
+          <div class="redeem-row">
+            <input
+              id="code-input"
+              name="code"
+              type="text"
+              inputmode="latin"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              maxlength="20"
+              placeholder="SABLE-XXXX-XXXX-XXXX"
+              aria-describedby="redeem-hint redeem-error"
+            />
+            <button class="btn btn-glass btn-primary" type="submit" id="redeem-btn">
+              <span id="redeem-btn-label">Einlösen</span>
+            </button>
+          </div>
+          <p class="redeem-hint" id="redeem-hint">
+            Bindestriche setzen wir automatisch. Verwechselbare Zeichen (0/O,&nbsp;1/I) kommen in Codes nicht vor.
+          </p>
+          <p class="redeem-error" id="redeem-error" role="alert" hidden></p>
+        </form>
+
+        <p class="redeem-privacy">
+          🔒 Deine Eingabe wird verschlüsselt übertragen, nur zur Prüfung verwendet
+          und nicht mit Werbe- oder Analysediensten geteilt.
+        </p>
+      </div>
+
+      <!-- Erfolgs-Zustand (Delight Moment) -->
+      <div class="redeem-success-state" id="redeem-success-state" hidden>
+        <div class="success-orb" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2 class="redeem-title">Willkommen bei Sable.</h2>
+        <p class="redeem-sub">Platz <span id="success-slot">–</span> von 100 ist jetzt deiner.</p>
+        <p class="success-receipt">Beleg-ID: <code id="success-receipt-id">–</code> — bitte aufbewahren.</p>
+        <div class="success-delivery" id="success-delivery"></div>
+        <ol class="success-steps" id="success-steps"></ol>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════ FAQ ═══════════════ -->
+  <section class="tile tile-deep" id="faq" aria-labelledby="faq-title">
+    <div class="tile-inner tile-narrow">
+      <h2 class="tile-title reveal" id="faq-title">Fragen, ehrlich beantwortet.</h2>
+
+      <details class="faq-item glass reveal">
+        <summary>Was brauche ich, um Sable zu nutzen?</summary>
+        <p>Einen Windows-PC (Windows 10/11) mit mindestens 16&nbsp;GB RAM — empfohlen 32&nbsp;GB — und Ollama (kostenlos). Das KI-Modell läuft komplett auf deiner Hardware; je stärker der Rechner, desto flotter die Antworten.</p>
+      </details>
+      <details class="faq-item glass reveal">
+        <summary>Läuft wirklich alles lokal?</summary>
+        <p>Ja. Screenshots, Fragen und Antworten bleiben auf deinem Gerät. Einzige Ausnahme: die optionale Websuche — die ist ab Werk aus, und wenn du sie aktivierst, zeigt Sable für jede Online-Anfrage sichtbar 🌐 statt 🔒.</p>
+      </details>
+      <details class="faq-item glass reveal">
+        <summary>Was passiert nach der Code-Einlösung?</summary>
+        <p>Du bekommst sofort den Download-Link und eine Beleg-ID. Kein Konto, keine E-Mail-Pflicht. Die Beleg-ID ist dein Nachweis, falls du später Support brauchst.</p>
+      </details>
+      <details class="faq-item glass reveal">
+        <summary>Kann ich meinen Code weitergeben?</summary>
+        <p>Solange er nicht eingelöst ist: ja, er ist übertragbar wie ein Schlüssel. Nach der Einlösung ist er dauerhaft verbraucht — genau einmal gültig, ohne Ausnahme.</p>
+      </details>
+      <details class="faq-item glass reveal">
+        <summary>Mein Code funktioniert nicht — was nun?</summary>
+        <p>Prüfe zuerst Tippfehler (Codes enthalten nie 0, O, 1 oder I). Wird der Code als „bereits eingelöst“ gemeldet, obwohl du ihn nie benutzt hast, melde dich mit deinem Kaufnachweis — jede Einlösung ist bei uns auditierbar, wir finden das heraus.</p>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="nav-orb" aria-hidden="true"></span>
+      <span>Sable</span>
+    </div>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="#produkt">Produkt</a>
+      <a href="#produkte">Weitere Produkte</a>
+      <a href="#einloesen">Code einlösen</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <p class="footer-fine">
+      Limitierter Erstzugang: 100 Plätze, live gezählt.
+      Diese Seite verwendet keine Cookies und keine Tracker.
+      <!-- TODO vor Launch: Impressum & Datenschutzerklärung verlinken -->
+    </p>
+  </div>
+</footer>
+
+<script src="/app.js" defer></script>
+</body>
+</html>

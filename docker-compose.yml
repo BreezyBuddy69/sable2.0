@@ -1,0 +1,26 @@
+services:
+  sable-platform:
+    build: .
+    image: sable-platform:latest
+    restart: unless-stopped
+    ports:
+      # Hinter nginx/Traefik (Hostinger-Standard) nur an localhost binden;
+      # für direkten Zugriff "127.0.0.1:" entfernen.
+      - "127.0.0.1:8080:8080"
+    env_file:
+      - .env
+    environment:
+      - DATA_DIR=/data
+    volumes:
+      # SQLite = Source of Truth der Einlösungen. Dieses Volume ist heilig:
+      # geht es verloren, zählt nur noch der (nachlaufende) Sheet-Spiegel.
+      - sable_data:/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  sable_data:

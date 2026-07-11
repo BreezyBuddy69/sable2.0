@@ -1,0 +1,328 @@
+// Sable Sales & Redemption Platform — HTTP-Server.
+//
+// Bewusst ohne Dependencies (kein Express, kein Framework): die Angriffs-
+// und Wartungsfläche eines Launch-kritischen Systems soll klein sein, das
+// Docker-Image winzig, der Start instantan. Statische Dateien werden beim
+// Start einmal in den Speicher geladen und gzip-vorkomprimiert ausgeliefert.
+
+"use strict";
+
+const http = require("node:http");
+const path = require("node:path");
+const fs = require("node:fs");
+const zlib = require("node:zlib");
+const { randomBytes, timingSafeEqual } = require("node:crypto");
+
+const { stmts, redeemCode, importCode, getCounts, logAudit, DATA_DIR } = require("./db");
+const { PRODUCTS, getProduct, publicProducts } = require("./products");
+const { checkRedeemAttempt, failureDelay } = require("./ratelimit");
+const sheets = require("./sheets");
+
+const PORT = Number(process.env.PORT || 8080);
+const HOST = process.env.HOST || "0.0.0.0";
+const TRUST_PROXY = process.env.TRUST_PROXY === "true";
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
+const startedAt = Date.now();
+
+// --- Statische Dateien (in-memory, vorkomprimiert) ---------------------------
+
+const PUBLIC_DIR = path.join(__dirname, "..", "public");
+const MIME = {
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".webp": "image/webp",
+  ".ico": "image/x-icon",
+  ".json": "application/json; charset=utf-8",
+  ".txt": "text/plain; charset=utf-8",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
+};
+
+const staticCache = new Map(); // urlPath -> { body, gzip, type, immutable }
+function loadStatic(dir, prefix = "") {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    const urlPath = `${prefix}/${entry.name}`;
+    if (entry.isDirectory()) {
+      loadStatic(full, urlPath);
+      continue;
+    }
+    const ext = path.extname(entry.name).toLowerCase();
+    if (!MIME[ext]) continue;
+    const body = fs.readFileSync(full);
+    const compressible = /^text\/|json|svg|javascript/.test(MIME[ext]);
+    staticCache.set(urlPath, {
+      body,
+      gzip: compressible ? zlib.gzipSync(body, { level: 9 }) : null,
+      type: MIME[ext],
+      immutable: urlPath.startsWith("/assets/"),
+    });
+  }
+}
+loadStatic(PUBLIC_DIR);
+staticCache.set("/", staticCache.get("/index.html"));
+
+// --- Helpers -----------------------------------------------------------------
+
+function clientIp(req) {
+  if (TRUST_PROXY) {
+    const fwd = req.headers["x-forwarded-for"];
+    if (fwd) return String(fwd).split(",")[0].trim();
+  }
+  return req.socket.remoteAddress || "unknown";
+}
+
+function securityHeaders(res) {
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+  );
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  if (TRUST_PROXY) {
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  }
+}
+
+function sendJson(req, res, status, obj, extraHeaders = {}) {
+  const body = Buffer.from(JSON.stringify(obj));
+  res.writeHead(status, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Content-Length": body.length,
+    "Cache-Control": "no-store",
+    ...extraHeaders,
+  });
+  res.end(req.method === "HEAD" ? undefined : body);
+}
+
+function readJsonBody(req, maxBytes = 4096) {
+  return new Promise((resolve, reject) => {
+    let size = 0;
+    const chunks = [];
+    req.on("data", (chunk) => {
+      size += chunk.length;
+      if (size > maxBytes) {
+        reject(new Error("payload_too_large"));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on("end", () => {
+      try {
+        resolve(JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}"));
+      } catch {
+        reject(new Error("invalid_json"));
+      }
+    });
+    req.on("error", reject);
+  });
+}
+
+function safeTokenEqual(a, b) {
+  const ba = Buffer.from(String(a));
+  const bb = Buffer.from(String(b));
+  return ba.length === bb.length && timingSafeEqual(ba, bb);
+}
+
+// Status-Antworten kurz cachen (Zähler steht auf der Landingpage — der
+// Endpoint darf unter Last nicht pro Pageview die DB zählen lassen).
+const statusCache = new Map(); // slug -> { at, payload }
+function productStatus(slug) {
+  const cached = statusCache.get(slug);
+  if (cached && Date.now() - cached.at < 5000) return cached.payload;
+  const product = getProduct(slug);
+  const { total, redeemed } = getCounts(slug);
+  const payload = {
+    product: slug,
+    totalSlots: product.totalSlots,
+    // "vergeben" zählt nur echte Einlösungen — nie erfunden. Solange noch
+    // keine Codes importiert sind, melden wir das ehrlich als "unbekannt".
+    poolLoaded: total > 0,
+    redeemed,
+    remaining: total > 0 ? Math.max(0, total - redeemed) : null,
+  };
+  statusCache.set(slug, { at: Date.now(), payload });
+  return payload;
+}
+
+// --- Routen --------------------------------------------------------------------
+
+async function handleRedeem(req, res) {
+  const ip = clientIp(req);
+  const gate = checkRedeemAttempt(ip);
+  if (!gate.allowed) {
+    logAudit("redeem_rate_limited", { ip });
+    return sendJson(req, res, 429, {
+      ok: false,
+      reason: "rate_limited",
+      retryAfterSeconds: gate.retryAfterSeconds,
+    }, { "Retry-After": String(gate.retryAfterSeconds) });
+  }
+
+  let body;
+  try {
+    body = await readJsonBody(req);
+  } catch {
+    await failureDelay();
+    return sendJson(req, res, 400, { ok: false, reason: "invalid_request" });
+  }
+
+  const product = getProduct(String(body.product || "sable"));
+  if (!product || product.status !== "available") {
+    await failureDelay();
+    return sendJson(req, res, 404, { ok: false, reason: "unknown_product" });
+  }
+
+  const code = String(body.code || "").trim().toUpperCase().replace(/\s+/g, "");
+  if (!product.codePattern.test(code)) {
+    await failureDelay();
+    return sendJson(req, res, 422, { ok: false, reason: "invalid_format" });
+  }
+
+  let result;
+  try {
+    result = redeemCode(product.slug, code, ip);
+  } catch (err) {
+    console.error("[redeem] DB-Fehler:", err);
+    logAudit("redeem_error", { product: product.slug, ip, detail: err.message });
+    return sendJson(req, res, 500, { ok: false, reason: "server_error" });
+  }
+
+  statusCache.delete(product.slug);
+
+  if (!result.ok) {
+    await failureDelay();
+    const status = result.reason === "not_found" ? 404 : 409;
+    return sendJson(req, res, status, { ok: false, reason: result.reason });
+  }
+
+  return sendJson(req, res, 200, {
+    ok: true,
+    redemptionId: result.redemptionId,
+    redeemedAt: result.redeemedAt,
+    delivery: {
+      type: product.delivery.type,
+      url: product.delivery.url,
+      label: product.delivery.label,
+      steps: product.delivery.steps,
+    },
+    status: productStatus(product.slug),
+  });
+}
+
+const server = http.createServer(async (req, res) => {
+  securityHeaders(res);
+  const url = new URL(req.url, "http://localhost");
+  const p = url.pathname;
+
+  try {
+    if (p === "/healthz") {
+      let dbOk = true;
+      try {
+        stmts.pendingWritebacks.get();
+      } catch {
+        dbOk = false;
+      }
+      return sendJson(req, res, dbOk ? 200 : 503, {
+        ok: dbOk,
+        uptimeSeconds: Math.round((Date.now() - startedAt) / 1000),
+        sheetsConfigured: sheets.isConfigured(),
+        lastSync: sheets.lastSyncInfo(PRODUCTS),
+        pendingWritebacks: dbOk ? stmts.pendingWritebacks.get().n : null,
+      });
+    }
+
+    if (p === "/api/products" && (req.method === "GET" || req.method === "HEAD")) {
+      return sendJson(req, res, 200, { products: publicProducts() });
+    }
+
+    if (p === "/api/status" && (req.method === "GET" || req.method === "HEAD")) {
+      const slug = url.searchParams.get("product") || "sable";
+      if (!getProduct(slug)) return sendJson(req, res, 404, { ok: false, reason: "unknown_product" });
+      return sendJson(req, res, 200, productStatus(slug));
+    }
+
+    if (p === "/api/redeem" && req.method === "POST") {
+      return await handleRedeem(req, res);
+    }
+
+    if (p === "/api/admin/audit" && req.method === "GET") {
+      if (!ADMIN_TOKEN) return sendJson(req, res, 404, { ok: false });
+      const auth = String(req.headers.authorization || "");
+      if (!auth.startsWith("Bearer ") || !safeTokenEqual(auth.slice(7), ADMIN_TOKEN)) {
+        return sendJson(req, res, 401, { ok: false, reason: "unauthorized" });
+      }
+      return sendJson(req, res, 200, { entries: stmts.auditTail.all(200) });
+    }
+
+    // Statische Dateien
+    if (req.method === "GET" || req.method === "HEAD") {
+      const file = staticCache.get(p);
+      if (file) {
+        const headers = {
+          "Content-Type": file.type,
+          "Cache-Control": file.immutable
+            ? "public, max-age=31536000, immutable"
+            : "public, max-age=300",
+          Vary: "Accept-Encoding",
+        };
+        const acceptsGzip = /\bgzip\b/.test(String(req.headers["accept-encoding"] || ""));
+        const body = file.gzip && acceptsGzip ? file.gzip : file.body;
+        if (file.gzip && acceptsGzip) headers["Content-Encoding"] = "gzip";
+        headers["Content-Length"] = body.length;
+        res.writeHead(200, headers);
+        return res.end(req.method === "HEAD" ? undefined : body);
+      }
+    }
+
+    // Unbekannte Pfade: zurück zur Landingpage (Single-Purpose-Seite)
+    res.writeHead(302, { Location: "/" });
+    return res.end();
+  } catch (err) {
+    console.error("[server] Unerwarteter Fehler:", err);
+    return sendJson(req, res, 500, { ok: false, reason: "server_error" });
+  }
+});
+
+// --- Lokaler Modus / Demo-Seed ---------------------------------------------------
+// Ohne Google-Credentials (lokale Entwicklung, erste Docker-Tests) wird ein
+// Demo-Pool erzeugt, damit der komplette Flow testbar ist. Die Demo-Codes
+// landen NUR in data/demo-codes.txt — nie im Frontend, nie in einer Response.
+
+function seedDemoIfEmpty() {
+  if (sheets.isConfigured()) return;
+  const { total } = getCounts("sable");
+  if (total > 0) return;
+  const ALPHABET = "23456789ABCDEFGHJKMNPQRSTVWXYZ";
+  const group = () =>
+    Array.from(randomBytes(4), (b) => ALPHABET[b % ALPHABET.length]).join("");
+  const codes = [];
+  while (codes.length < Number(process.env.DEMO_CODE_COUNT || 100)) {
+    const code = `SABLE-${group()}-${group()}-${group()}`;
+    if (!codes.includes(code)) codes.push(code);
+  }
+  for (const code of codes) importCode(code, "sable", { source: "demo" });
+  const outFile = path.join(DATA_DIR, "demo-codes.txt");
+  fs.writeFileSync(outFile, codes.join("\n") + "\n");
+  console.warn(`[demo] Keine Sheets konfiguriert — ${codes.length} Demo-Codes erzeugt: ${outFile}`);
+}
+
+seedDemoIfEmpty();
+sheets.startSync(PRODUCTS);
+
+server.listen(PORT, HOST, () => {
+  console.log(`Sable-Plattform läuft auf http://${HOST}:${PORT} (Sheets: ${sheets.isConfigured() ? "aktiv" : "lokaler Modus"})`);
+});
+
+// Sauberes Herunterfahren (Docker SIGTERM)
+for (const sig of ["SIGTERM", "SIGINT"]) {
+  process.on(sig, () => {
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(0), 3000).unref();
+  });
+}
