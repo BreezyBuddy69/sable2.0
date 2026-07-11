@@ -169,49 +169,6 @@ async function fetchStatus() {
 
 fetchStatus().then(renderScarcity);
 
-/* ═══════════════ Produkte (Multi-Produkt-Grid) ═══════════════ */
-
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
-  );
-}
-
-(async function renderProducts() {
-  try {
-    const res = await fetch("api/products", { headers: { Accept: "application/json" } });
-    if (!res.ok) return;
-    const { products } = await res.json();
-    if (!Array.isArray(products) || products.length === 0) return;
-
-    const grid = document.getElementById("products-grid");
-    const cards = products.map((p) => {
-      if (p.status === "available") {
-        return `<article class="product-card glass product-available">
-          <p class="product-status">Jetzt verfügbar</p>
-          <h3>${esc(p.name)}</h3>
-          <p class="product-tagline">${esc(p.tagline)}</p>
-          <a class="btn btn-glass btn-small" href="#einloesen">Code einlösen</a>
-        </article>`;
-      }
-      return `<article class="product-card glass product-soon">
-        <p class="product-status">Bald verfügbar</p>
-        <h3>${esc(p.name)}</h3>
-        <p class="product-tagline">${esc(p.tagline)}</p>
-      </article>`;
-    });
-    // Platzhalter-Slot: zeigt, dass hier weitere Produkte andocken
-    cards.push(`<article class="product-card glass product-soon" aria-label="Weiteres Produkt in Arbeit">
-      <p class="product-status">In Arbeit</p>
-      <h3 class="product-placeholder" aria-hidden="true">████████</h3>
-      <p class="product-tagline">Wird hier angekündigt.</p>
-    </article>`);
-    grid.innerHTML = cards.join("");
-  } catch {
-    /* statischer Fallback aus dem HTML bleibt stehen */
-  }
-})();
-
 /* ═══════════════ Code-Einlösung ═══════════════ */
 
 const form = document.getElementById("redeem-form");
