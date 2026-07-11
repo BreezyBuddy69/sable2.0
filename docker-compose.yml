@@ -6,7 +6,9 @@ services:
     ports:
       # Hinter nginx/Traefik (Hostinger-Standard) nur an localhost binden;
       # für direkten Zugriff "127.0.0.1:" entfernen.
-      - "127.0.0.1:8080:8080"
+      # Host-Port bewusst unüblich gewählt (Kollisionen mit anderen Projekten
+      # auf derselben VM vermeiden); Container-Port bleibt 8080.
+      - "127.0.0.1:47821:8080"
     env_file:
       # optional: falls keine .env auf dem Host liegt, startet der Container
       # trotzdem (App läuft dann im Demo-Modus, siehe server/index.js).
