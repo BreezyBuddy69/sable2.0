@@ -159,7 +159,7 @@ function renderScarcity(status) {
 
 async function fetchStatus() {
   try {
-    const res = await fetch("/api/status?product=sable", { headers: { Accept: "application/json" } });
+    const res = await fetch("api/status?product=sable", { headers: { Accept: "application/json" } });
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -179,7 +179,7 @@ function esc(s) {
 
 (async function renderProducts() {
   try {
-    const res = await fetch("/api/products", { headers: { Accept: "application/json" } });
+    const res = await fetch("api/products", { headers: { Accept: "application/json" } });
     if (!res.ok) return;
     const { products } = await res.json();
     if (!Array.isArray(products) || products.length === 0) return;
@@ -320,7 +320,7 @@ form.addEventListener("submit", async (ev) => {
 
   let res, data;
   try {
-    res = await fetch("/api/redeem", {
+    res = await fetch("api/redeem", {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({ product: "sable", code }),

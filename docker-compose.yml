@@ -27,8 +27,14 @@ services:
       - traefik.http.routers.sidequest.rule=Host(`halovisionai.cloud`) && PathPrefix(`/sidequest`)
       - traefik.http.routers.sidequest.entrypoints=websecure
       - traefik.http.routers.sidequest.tls.certresolver=letsencrypt
+      # Bare "/sidequest" (ohne trailing slash) zuerst auf "/sidequest/" umleiten:
+      # index.html referenziert CSS/JS/API relativ, das geht nur mit korrektem
+      # Verzeichnis-Pfad in der Adressleiste.
+      - traefik.http.middlewares.sidequest-redirect.redirectregex.regex=^(https?://[^/]+)/sidequest$$
+      - traefik.http.middlewares.sidequest-redirect.redirectregex.replacement=$${1}/sidequest/
+      - traefik.http.middlewares.sidequest-redirect.redirectregex.permanent=true
       - traefik.http.middlewares.sidequest-strip.stripprefix.prefixes=/sidequest
-      - traefik.http.routers.sidequest.middlewares=sidequest-strip
+      - traefik.http.routers.sidequest.middlewares=sidequest-redirect,sidequest-strip
       - traefik.http.services.sidequest.loadbalancer.server.port=8080
 
 networks:
