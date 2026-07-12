@@ -32,7 +32,7 @@ const PRODUCTS = {
     // Ablage (CDN, Release-Server) umleiten.
     delivery: {
       type: "download",
-      url: process.env.SABLE_DOWNLOAD_URL || "/downloads/Sable2-Setup.exe",
+      url: process.env.SABLE_DOWNLOAD_URL || "downloads/Sable2-Setup.exe",
       label: "Sable 2.0 herunterladen",
       steps: [
         "Sable2-Setup.exe herunterladen und doppelklicken — installiert sich automatisch, kein Entpacken nötig.",
