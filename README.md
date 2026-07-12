@@ -114,7 +114,7 @@ server {
 |---|---|---|
 | `GOOGLE_SERVICE_ACCOUNT_JSON_B64` | für Sheets | Service-Account-JSON, Base64 |
 | `SABLE_SHEET_ID_1` / `_2` | für Sheets | die beiden Code-Sheets |
-| `SABLE_DOWNLOAD_URL` | vor Launch | Auslieferung nach Einlösung |
+| `SABLE_DOWNLOAD_URL` | vor Launch | Auslieferung nach Einlösung — zeigt auf das GitHub Release (siehe unten), kein VPS-Filetransfer nötig |
 | `TRUST_PROXY` | ja | `true` hinter nginx/Traefik, sonst `false` |
 | `ADMIN_TOKEN` | optional | schaltet `GET /api/admin/audit` frei |
 | `SABLE_TOTAL_SLOTS` | nein | Default 100 |
@@ -152,6 +152,19 @@ Code verbraucht wurde (bei Fehlern: nie).
 1. `.env` auf dem VPS: Google-Credentials, beide Sheet-IDs,
    **`SABLE_DOWNLOAD_URL`** (solange leer, zeigt die Erfolgsseite einen
    „Link wird freigeschaltet“-Hinweis statt des Download-Buttons).
+
+   Der Installer wird bewusst **nicht** per `scp` aufs VPS kopiert (82 MB,
+   `.gitignore`d, siehe `public/downloads/`), sondern als GitHub Release
+   ausgeliefert — kein VPS-Zugriff nötig, weder jetzt noch bei künftigen
+   Sable2-Updates:
+   ```
+   SABLE_DOWNLOAD_URL=https://github.com/BreezyBuddy69/sable2.0/releases/download/sable2-installer/Sable2-Setup.exe
+   ```
+   Bei einem neuen Sable2-Build das Release-Asset einfach ersetzen (URL bleibt
+   stabil, `.env` muss danach nicht mehr angefasst werden):
+   ```bash
+   gh release upload sable2-installer NEUE-Sable2-Setup.exe --repo BreezyBuddy69/sable2.0 --clobber
+   ```
 2. Echte Codes generieren und in die Sheets importieren (Demo-Modus füllt
    die DB sonst mit Testcodes — vor Produktivgang `data/` bzw. das Volume
    einmal leeren, damit nur Sheet-Codes zählen).
