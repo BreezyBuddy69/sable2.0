@@ -26,17 +26,18 @@ const PRODUCTS = {
     })),
     // Auslieferung nach erfolgreicher Einlösung. Der Mechanismus ist bewusst
     // konfigurierbar: URL austauschen genügt (Download-Link, Portal-Login, …).
-    // Fallback zeigt auf das im Repo ausgelieferte Sable-2.0-ZIP
+    // Fallback zeigt auf den im Repo ausgelieferten Sable-2.0-Installer
     // (public/downloads/) - so funktioniert der Download-Flow ohne .env,
     // production kann per SABLE_DOWNLOAD_URL trotzdem auf eine externe
     // Ablage (CDN, Release-Server) umleiten.
     delivery: {
       type: "download",
-      url: process.env.SABLE_DOWNLOAD_URL || "/downloads/Sable2-win-x64.zip",
+      url: process.env.SABLE_DOWNLOAD_URL || "/downloads/Sable2-Setup.exe",
       label: "Sable 2.0 herunterladen",
       steps: [
-        "Lade Sable 2.0 herunter und entpacke den Ordner (ZIP, keine Installation nötig).",
-        "Sable2.exe starten. Windows SmartScreen kann beim ersten Start warnen (unsignierte App) — „Weitere Informationen“ → „Trotzdem ausführen“.",
+        "Sable2-Setup.exe herunterladen und doppelklicken — installiert sich automatisch, kein Entpacken nötig.",
+        "Windows SmartScreen kann beim ersten Start warnen (unsignierte App) — „Weitere Informationen“ → „Trotzdem ausführen“.",
+        "Sable startet nach der Installation automatisch und legt eine Verknüpfung auf dem Desktop und im Startmenü an.",
         "Strg + Leertaste öffnet Sable, Strg + Shift + Leertaste startet die Circle-Geste (Bildschirm einkreisen, direkt fragen).",
         "Optional für den Privacy-Modus (alles lokal): Ollama installieren (ollama.com) und in den Sable-Einstellungen auf „Nur lokal“ umschalten.",
       ],
