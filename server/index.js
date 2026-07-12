@@ -11,12 +11,13 @@ const http = require("node:http");
 const path = require("node:path");
 const fs = require("node:fs");
 const zlib = require("node:zlib");
-const { randomBytes, timingSafeEqual } = require("node:crypto");
+const { timingSafeEqual } = require("node:crypto");
 
-const { stmts, redeemCode, importCode, getCounts, logAudit, DATA_DIR, getMetaCount, bumpMetaCount } = require("./db");
+const { stmts, redeemCode, importCode, getCounts, logAudit, getMetaCount, bumpMetaCount } = require("./db");
 const { PRODUCTS, getProduct, publicProducts } = require("./products");
 const { checkRedeemAttempt, failureDelay } = require("./ratelimit");
 const sheets = require("./sheets");
+const SEED_CODES = require("./seed-codes");
 
 const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || "0.0.0.0";
@@ -391,30 +392,23 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-// --- Lokaler Modus / Demo-Seed ---------------------------------------------------
-// Ohne Google-Credentials (lokale Entwicklung, erste Docker-Tests) wird ein
-// Demo-Pool erzeugt, damit der komplette Flow testbar ist. Die Demo-Codes
-// landen NUR in data/demo-codes.txt — nie im Frontend, nie in einer Response.
+// --- Lokaler Modus / Seed -------------------------------------------------------
+// Ohne Google-Sheets-Credentials (Standardfall, siehe server/seed-codes.js)
+// wird der fest im Repo verankerte Code-Pool importiert, sobald die lokale DB
+// für das Produkt leer ist. Das macht den Redeem-Flow unabhängig von externer
+// .env/Sheets/n8n-Konfiguration — ein "Ordner löschen + neu klonen"-Deploy
+// reicht, die echten 100 Codes sind sofort wieder da.
 
-function seedDemoIfEmpty() {
+function seedCodesIfEmpty() {
   if (sheets.isConfigured()) return;
   const { total } = getCounts("sable");
   if (total > 0) return;
-  const ALPHABET = "23456789ABCDEFGHJKMNPQRSTVWXYZ";
-  const group = () =>
-    Array.from(randomBytes(4), (b) => ALPHABET[b % ALPHABET.length]).join("");
-  const codes = [];
-  while (codes.length < Number(process.env.DEMO_CODE_COUNT || 100)) {
-    const code = `SABLE-${group()}-${group()}-${group()}`;
-    if (!codes.includes(code)) codes.push(code);
-  }
-  for (const code of codes) importCode(code, "sable", { source: "demo" });
-  const outFile = path.join(DATA_DIR, "demo-codes.txt");
-  fs.writeFileSync(outFile, codes.join("\n") + "\n");
-  console.warn(`[demo] Keine Sheets konfiguriert — ${codes.length} Demo-Codes erzeugt: ${outFile}`);
+  const codes = SEED_CODES.sable || [];
+  for (const code of codes) importCode(code, "sable", { source: "seed" });
+  console.log(`[seed] ${codes.length} Codes aus server/seed-codes.js importiert (kein Sheets konfiguriert).`);
 }
 
-seedDemoIfEmpty();
+seedCodesIfEmpty();
 sheets.startSync(PRODUCTS);
 
 server.listen(PORT, HOST, () => {
