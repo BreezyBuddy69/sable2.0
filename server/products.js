@@ -26,13 +26,16 @@ const PRODUCTS = {
     })),
     // Auslieferung nach erfolgreicher Einlösung. Der Mechanismus ist bewusst
     // konfigurierbar: URL austauschen genügt (Download-Link, Portal-Login, …).
-    // Fallback zeigt auf den im Repo ausgelieferten Sable-2.0-Installer
-    // (public/downloads/) - so funktioniert der Download-Flow ohne .env,
-    // production kann per SABLE_DOWNLOAD_URL trotzdem auf eine externe
-    // Ablage (CDN, Release-Server) umleiten.
+    // Default zeigt direkt auf das öffentliche GitHub Release (82MB-Installer,
+    // bewusst nicht im Repo/gitignored) - so funktioniert der Download-Flow
+    // ohne jede .env-Konfiguration auf dem VPS. SABLE_DOWNLOAD_URL bleibt als
+    // Override erhalten, falls später doch mal auf eine andere Ablage
+    // (CDN, eigener Release-Server) umgezogen werden soll.
     delivery: {
       type: "download",
-      url: process.env.SABLE_DOWNLOAD_URL || "downloads/Sable2-Setup.exe",
+      url:
+        process.env.SABLE_DOWNLOAD_URL ||
+        "https://github.com/BreezyBuddy69/sable2.0/releases/download/sable2-installer/Sable2-Setup.exe",
       label: "Sable 2.0 herunterladen",
       steps: [
         "Sable2-Setup.exe herunterladen und doppelklicken — installiert sich automatisch, kein Entpacken nötig.",
