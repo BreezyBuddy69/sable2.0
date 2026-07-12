@@ -104,6 +104,11 @@ function loadStatic(dir, prefix = "") {
     const full = path.join(dir, entry.name);
     const urlPath = `${prefix}/${entry.name}`;
     if (entry.isDirectory()) {
+      // downloads/ wird bewusst NICHT in den In-Memory-Cache geladen: das
+      // sind grosse Release-Binaries (zig/hundert MB), kein Landingpage-
+      // Asset - die werden gestreamt (siehe handleDownload), sonst blaeht
+      // ein einzelnes ZIP den RSS jedes Serverstarts auf.
+      if (urlPath === "/downloads") continue;
       loadStatic(full, urlPath);
       continue;
     }
@@ -121,6 +126,36 @@ function loadStatic(dir, prefix = "") {
 }
 loadStatic(PUBLIC_DIR);
 staticCache.set("/", staticCache.get("/index.html"));
+
+// --- Downloads (gestreamt, nicht im In-Memory-Cache) --------------------------
+
+const DOWNLOADS_DIR = path.join(PUBLIC_DIR, "downloads");
+const DOWNLOAD_MIME = { ".zip": "application/zip", ".exe": "application/vnd.microsoft.portable-executable" };
+
+function handleDownload(req, res, urlPath) {
+  const name = urlPath.slice("/downloads/".length);
+  // Kein Encoded-Slash/Traversal: nur ein einzelnes Datei-Segment ohne "..".
+  if (!name || name.includes("/") || name.includes("..")) {
+    res.writeHead(404);
+    return res.end();
+  }
+  const ext = path.extname(name).toLowerCase();
+  const mime = DOWNLOAD_MIME[ext];
+  const full = path.join(DOWNLOADS_DIR, name);
+  if (!mime || !full.startsWith(DOWNLOADS_DIR) || !fs.existsSync(full)) {
+    res.writeHead(404);
+    return res.end();
+  }
+  const stat = fs.statSync(full);
+  res.writeHead(200, {
+    "Content-Type": mime,
+    "Content-Length": stat.size,
+    "Content-Disposition": `attachment; filename="${name}"`,
+    "Cache-Control": "public, max-age=3600",
+  });
+  if (req.method === "HEAD") return res.end();
+  fs.createReadStream(full).pipe(res);
+}
 
 // --- Helpers -----------------------------------------------------------------
 
@@ -321,6 +356,10 @@ const server = http.createServer(async (req, res) => {
         return sendJson(req, res, 401, { ok: false, reason: "unauthorized" });
       }
       return sendJson(req, res, 200, { entries: stmts.auditTail.all(200) });
+    }
+
+    if (p.startsWith("/downloads/") && (req.method === "GET" || req.method === "HEAD")) {
+      return handleDownload(req, res, p);
     }
 
     // Statische Dateien
