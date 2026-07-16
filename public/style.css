@@ -500,6 +500,11 @@ code { font-family: var(--mono); font-size: 0.92em; }
   margin-top: 56px;
   text-align: left;
 }
+/* Team-Sektion hat nur 2 Karten statt 6 - eigene 2-Spalten-Variante, damit
+   sie auf breiten Bildschirmen zentriert steht statt im 3er-Raster mit
+   leerer dritter Spalte zu haengen. Unter 900px greift ohnehin die
+   gemeinsame .features-Regel oben (2 Spalten), darunter 1 Spalte. */
+.features-2 { grid-template-columns: repeat(2, minmax(0, 380px)); justify-content: center; }
 .feature { padding: 28px 26px; transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.35s ease; }
 .feature:hover {
   transform: translateY(-4px);
