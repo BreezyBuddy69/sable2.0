@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Sable — Der KI-Agent, der deinen PC bedient</title>
-<meta name="description" content="Sable sieht deinen Bildschirm, versteht deine Aufgabe und übernimmt Klicks, Tippen und ganze Abläufe für dich — lokal oder in der Cloud. Limitierter Erstzugang: 100 Plätze. Code einlösen und sofort starten." />
-<meta property="og:title" content="Sable — Der KI-Agent, der deinen PC bedient" />
-<meta property="og:description" content="Der KI-Agent, der deinen PC für dich bedient — lokal oder in der Cloud, keine Abos. Limitiert auf 100 Erstzugänge — löse deinen Code ein." />
+<title>Sable: Der KI-Agent, der deinen PC bedient</title>
+<meta name="description" content="Gib Sable eine Aufgabe statt einzelner Klicks: Sable recherchiert, schreibt Word- und Excel-Dateien, räumt Ordner auf und bedient Programme, bis die Aufgabe erledigt ist. Windows, lokal oder Cloud, keine Abos." />
+<meta property="og:title" content="Sable: Der KI-Agent, der deinen PC bedient" />
+<meta property="og:description" content="Gib Sable eine Aufgabe, nicht einzelne Klicks. Sable arbeitet sie Schritt für Schritt ab und zeigt dir jeden Schritt. Limitiert auf 100 Erstzugänge." />
 <meta property="og:type" content="website" />
 <meta name="theme-color" content="#0a0a0c" />
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
@@ -19,7 +19,7 @@
 <!-- ═══════════════ NAV ═══════════════ -->
 <header class="nav" id="nav">
   <div class="nav-inner">
-    <a class="nav-logo" href="#top" aria-label="Sable — Startseite">
+    <a class="nav-logo" href="#top" aria-label="Sable Startseite">
       <span class="nav-orb" aria-hidden="true"></span>
       <span class="nav-name">Sable</span>
     </a>
@@ -47,13 +47,13 @@
       </p>
 
       <h1 class="hero-title" id="hero-title">
-        Der KI-Agent, der<br />deinen PC bedient.
+        Der KI-Agent, der <br />deinen PC bedient.
       </h1>
 
       <p class="hero-sub">
-        Sable sieht deinen Bildschirm, versteht deine Aufgabe und übernimmt
-        Klicks, Tippen und ganze Abläufe für dich&nbsp;— du bestätigst nur
-        noch. <strong>Lokal auf deiner Hardware oder in der Cloud, keine Abos.</strong>
+        Gib Sable eine Aufgabe statt einzelner Klicks. Sable recherchiert, rechnet,
+        schreibt Dokumente und bedient Programme, Schritt für Schritt, bis die Aufgabe
+        erledigt ist. <strong>Du siehst jeden Schritt. Keine Abos.</strong>
       </p>
 
       <div class="hero-ctas">
@@ -65,8 +65,8 @@
       </div>
 
       <ul class="hero-ticks" aria-label="Kernpunkte">
-        <li>Bedient deinen PC für dich</li>
-        <li>Handelt nur mit deinem Ja</li>
+        <li>Arbeitet Aufgaben zu Ende</li>
+        <li>Jeder Schritt sichtbar</li>
         <li>Einmal zahlen, deins</li>
       </ul>
 
@@ -84,36 +84,43 @@
     <div class="tile-inner">
       <h2 class="tile-title reveal" id="produkt-title">Ein Tastendruck.<br />Strg&nbsp;+&nbsp;Leertaste.</h2>
       <p class="tile-lead reveal">
-        Sable legt sich als schwebende Glasleiste über deine Arbeit —
-        fragt, versteht, schlägt vor. Und verschwindet wieder.
+        Sable legt sich als schmale Leiste über deine Arbeit. Du schreibst oder sagst,
+        was erledigt werden soll, und Sable arbeitet es im Hintergrund ab.
       </p>
 
-      <!-- Nachbau der echten Sable-Overlay-UI (Bar + Orb + Panel + Aktionskarte) -->
-      <div class="mockup reveal" role="img" aria-label="Sable-Overlay: Eingabeleiste mit Antwort-Panel und einer Aktionskarte, die auf Bestätigung per Enter wartet">
+      <!-- Nachbau der echten Sable-Overlay-UI (Bar + Panel mit Plan-Checkliste
+           und Werkzeug-Schritten). Die Aufgabe ist eine aus scripts/eval.js, die
+           alle getesteten Modelle real geloest haben - keine erfundene Demo. -->
+      <div class="mockup reveal" role="img" aria-label="Sable-Overlay: Nutzer bittet um einen Quartalsbericht aus drei CSV-Dateien. Sable zeigt einen Plan mit drei erledigten Schritten, drei Werkzeug-Schritte und die fertige Antwort.">
         <div class="mockup-desktop" aria-hidden="true">
           <div class="mock-window mock-window-a"><span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-dot"></span></div>
           <div class="mock-window mock-window-b"></div>
         </div>
         <div class="mockup-overlay" aria-hidden="true">
           <div class="mock-panel">
-            <p class="mock-msg mock-user">Benenne die Screenshots auf dem Desktop nach Datum</p>
-            <p class="mock-msg mock-ai">Ich sehe 14 Screenshots. Ich schlage vor, sie nach dem Muster <code>2026-07-10_1.png</code> umzubenennen.</p>
-            <div class="mock-action">
-              <span class="mock-action-icon">⚡</span>
-              <span class="mock-action-text">Aktion: Dateien umbenennen (14)</span>
-              <span class="mock-action-hint">Enter ausführen&nbsp;·&nbsp;Esc verwerfen</span>
-            </div>
+            <p class="mock-msg mock-user">Mach mir aus den Umsatz-CSVs in Downloads einen Word-Bericht fürs Q1</p>
+            <ul class="mock-plan">
+              <li>CSV-Dateien finden</li>
+              <li>Umsatz pro Monat berechnen</li>
+              <li>Bericht schreiben</li>
+            </ul>
+            <ul class="mock-tools">
+              <li><span class="mock-tool-name">Ordner gelesen</span><span class="mock-tool-out">3 CSV-Dateien</span></li>
+              <li><span class="mock-tool-name">PowerShell</span><span class="mock-tool-out">Summen pro Monat</span></li>
+              <li><span class="mock-tool-name">Word-Dokument erstellt</span><span class="mock-tool-out">Quartalsbericht.docx</span></li>
+            </ul>
+            <p class="mock-msg mock-ai">Fertig. <code>Quartalsbericht.docx</code> liegt auf dem Desktop, Q1-Umsatz gesamt CHF&nbsp;1'151.75.</p>
           </div>
           <div class="mock-bar">
             <span class="mock-orb"></span>
             <span class="mock-input">Was soll ich tun?<span class="mock-caret"></span></span>
-            <span class="mock-trust">🔒 lokal</span>
+            <span class="mock-trust">✓ erledigt</span>
           </div>
         </div>
       </div>
 
       <p class="mockup-caption reveal">
-        Jede Aktion ist ein Vorschlag. Ausgeführt wird erst, wenn <em>du</em> Enter drückst.
+        Kein Fenster springt auf. Löschen, Prozesse beenden und Überschreiben bestätigst <em>immer du</em>.
       </p>
     </div>
   </section>
@@ -124,28 +131,28 @@
       <h2 class="tile-title reveal" id="funktionen-title">Gebaut wie ein Werkzeug.<br />Nicht wie ein Dienst.</h2>
       <div class="features">
         <article class="feature glass reveal">
-          <h3>Bedient deinen PC</h3>
-          <p>Klicken, Doppelklick, Rechtsklick, Scrollen, Drag&nbsp;&amp;&nbsp;Drop, Tippen, Apps starten — deine Maus und Tastatur, geführt per Sprache. Du musst nicht mehr selbst ran.</p>
+          <h3>Arbeitet Aufgaben zu Ende</h3>
+          <p>Sable plant, führt aus, liest das Ergebnis und macht weiter, bis zu 40 Schritte am Stück. Geht etwas schief, sucht Sable einen anderen Weg, statt stehen zu bleiben.</p>
         </article>
         <article class="feature glass reveal">
-          <h3>Sieht, was du siehst</h3>
-          <p>Screenshot-Vision versteht Fenster, Text und Buttons — und beantwortet Fragen zu genau dem, was vor dir liegt.</p>
+          <h3>Arbeitet im Hintergrund</h3>
+          <p>Word, Excel, PowerPoint und PDF entstehen direkt als Datei. Ordner aufräumen, umbenennen, rechnen, Befehle ausführen: alles unsichtbar, während du weiterarbeitest.</p>
         </article>
         <article class="feature glass reveal">
-          <h3>Handelt nur mit deinem Ja</h3>
-          <p>Klick, Tippen, App öffnen: alles erscheint als Karte. Enter führt aus, Esc verwirft. Strukturell erzwungen, nicht nur versprochen.</p>
+          <h3>Recherchiert im Web</h3>
+          <p>Sable sucht selbst, liest die gefundenen Seiten und nennt seine Quellen. Für Fragen, bei denen altes Wissen nicht reicht: Versionen, Preise, Öffnungszeiten.</p>
+        </article>
+        <article class="feature glass reveal">
+          <h3>Circle und Sprache</h3>
+          <p>Strg&nbsp;+&nbsp;Shift&nbsp;+&nbsp;Leertaste, einen Bereich des Bildschirms einkreisen und direkt fragen. Oder einfach sprechen: Sable hört zu und antwortet auf Wunsch laut.</p>
+        </article>
+        <article class="feature glass reveal">
+          <h3>Du behältst die Kontrolle</h3>
+          <p>Von „jede Aktion bestätigen“ bis „selbstständig arbeiten“ wählst du den Modus. Löschen und Prozesse beenden brauchen immer dein Enter, jede Aktion steht im lokalen Protokoll.</p>
         </article>
         <article class="feature glass reveal">
           <h3>Lokal oder Cloud</h3>
-          <p>Per Ollama läuft das Modell komplett auf deiner Hardware — oder du wählst ein Cloud-Modell für mehr Tempo. Du entscheidest, jederzeit umschaltbar.</p>
-        </article>
-        <article class="feature glass reveal">
-          <h3>Nie heimlich online</h3>
-          <p>Nutzt Sable ein Cloud-Modell oder die Websuche, zeigt die Leiste sichtbar 🌐 statt 🔒 — du siehst immer, wo deine Anfrage hingeht.</p>
-        </article>
-        <article class="feature glass reveal">
-          <h3>Audit-Log</h3>
-          <p>Jede ausgeführte Aktion wird lokal mit Zeitstempel protokolliert. Du kannst jederzeit nachlesen, was passiert ist.</p>
+          <p>Standardmäßig schnelle, günstige Cloud-Modelle. Im Privacy-Modus läuft alles über Ollama auf deinem PC. Die Leiste zeigt immer sichtbar, welcher Weg gerade aktiv ist.</p>
         </article>
       </div>
     </div>
@@ -158,7 +165,7 @@
       <div class="features features-2">
         <article class="feature glass reveal">
           <h3>Jayden Mikus</h3>
-          <p>Gründer &amp; Entwicklung. Baut Sable von Grund auf selbst — Agent-Logik, Voice&nbsp;OS und Oberfläche. Daneben Video-Editor (YouTube&nbsp;@subspeedy, 1M+&nbsp;Aufrufe) und Gründer der Automatisierungsagentur HaloVision&nbsp;AI.</p>
+          <p>Gründer &amp; Entwicklung. Baut Sable von Grund auf selbst: Agent-Logik, Sprachsteuerung und Oberfläche. Daneben Video-Editor (YouTube&nbsp;@subspeedy, 1M+&nbsp;Aufrufe) und Gründer der Automatisierungsagentur Sightline.</p>
         </article>
         <article class="feature glass reveal">
           <h3>Aron Nägele</h3>
@@ -176,7 +183,7 @@
         <li class="step glass reveal">
           <span class="step-num" aria-hidden="true">1</span>
           <h3>Code einlösen</h3>
-          <p>Deinen Zugangscode unten eingeben. Er ist genau einmal gültig — und danach fest deiner.</p>
+          <p>Deinen Zugangscode unten eingeben. Er ist genau einmal gültig und danach fest deiner.</p>
         </li>
         <li class="step glass reveal">
           <span class="step-num" aria-hidden="true">2</span>
@@ -240,7 +247,7 @@
         </div>
         <h2 class="redeem-title">Willkommen bei Sable.</h2>
         <p class="redeem-sub">Platz <span id="success-slot">–</span> von 100 ist jetzt deiner.</p>
-        <p class="success-receipt">Beleg-ID: <code id="success-receipt-id">–</code> — bitte aufbewahren.</p>
+        <p class="success-receipt">Beleg-ID: <code id="success-receipt-id">–</code>, bitte aufbewahren.</p>
         <div class="success-delivery" id="success-delivery"></div>
         <ol class="success-steps" id="success-steps"></ol>
       </div>
@@ -255,15 +262,23 @@
 
       <details class="faq-item glass reveal">
         <summary>Was brauche ich, um Sable zu nutzen?</summary>
-        <p>Einen Windows-PC (Windows 10/11). Für ein lokales Modell empfehlen wir 16&nbsp;GB RAM aufwärts plus Ollama (kostenlos) — wer lieber ein Cloud-Modell nutzt, legt auch mit schwächerer Hardware sofort los.</p>
+        <p>Einen Windows-PC (Windows 10/11) und Internet. Mit dem Cloud-Modell läuft Sable auch auf schwacher Hardware. Für den Privacy-Modus (alles lokal) empfehlen wir 16&nbsp;GB RAM aufwärts plus Ollama (kostenlos).</p>
+      </details>
+      <details class="faq-item glass reveal">
+        <summary>Welche KI steckt dahinter?</summary>
+        <p>Standard ist DeepSeek V4.1 Flash über OpenRouter: schnell, günstig und versteht auch Bilder. Wir haben acht Modelle an echten Aufgaben verglichen, dieses hat alle 30 Testläufe bestanden. In den Einstellungen kannst du das Modell wechseln oder auf lokal umstellen, dann verlässt nichts deinen PC.</p>
+      </details>
+      <details class="faq-item glass reveal">
+        <summary>Kann Sable etwas kaputt machen?</summary>
+        <p>Löschen landet im Papierkorb und braucht immer dein Enter, ebenso Prozesse beenden und das Überschreiben bestehender Dateien. PowerShell-Befehle zeigt Sable dir vollständig, bevor sie laufen, außer du schaltest das bewusst frei. Jede Aktion steht im lokalen Protokoll.</p>
       </details>
       <details class="faq-item glass reveal">
         <summary>Was passiert nach der Code-Einlösung?</summary>
         <p>Du bekommst sofort den Download-Link und eine Beleg-ID. Kein Konto, keine E-Mail-Pflicht. Die Beleg-ID ist dein Nachweis, falls du später Support brauchst.</p>
       </details>
       <details class="faq-item glass reveal">
-        <summary>Mein Code funktioniert nicht — was nun?</summary>
-        <p>Prüfe zuerst Tippfehler (Codes enthalten nie 0, O, 1 oder I). Wird der Code als „bereits eingelöst" gemeldet, obwohl du ihn nie benutzt hast, melde dich mit deinem Kaufnachweis — jede Einlösung ist bei uns auditierbar, wir finden das heraus.</p>
+        <summary>Mein Code funktioniert nicht. Was nun?</summary>
+        <p>Prüfe zuerst Tippfehler (Codes enthalten nie 0, O, 1 oder I). Wird der Code als „bereits eingelöst“ gemeldet, obwohl du ihn nie benutzt hast, melde dich mit deinem Kaufnachweis. Jede Einlösung ist bei uns nachvollziehbar, wir finden das heraus.</p>
       </details>
     </div>
   </section>

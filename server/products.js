@@ -12,8 +12,8 @@ function envList(...names) {
 const PRODUCTS = {
   sable: {
     slug: "sable",
-    name: "Sable 2.0",
-    tagline: "Der KI-Agent, der deinen PC bedient — jetzt mit der Circle-Geste.",
+    name: "Sable 2.1",
+    tagline: "Der KI-Agent, der Aufgaben auf deinem PC selbstständig erledigt.",
     status: "available", // available | coming_soon
     totalSlots: Number(process.env.SABLE_TOTAL_SLOTS || 100),
     // Codes: SABLE-XXXX-XXXX-XXXX, Crockford-Alphabet (kein 0/O/1/I/L/U)
@@ -36,7 +36,7 @@ const PRODUCTS = {
       url:
         process.env.SABLE_DOWNLOAD_URL ||
         "https://github.com/BreezyBuddy69/sable2.0/releases/download/sable2-installer/Sable2-Setup.exe",
-      label: "Sable 2.0 herunterladen",
+      label: "Sable 2.1 herunterladen",
       steps: [
         "Sable2-Setup.exe herunterladen und doppelklicken — installiert sich automatisch, kein Entpacken nötig.",
         "Windows SmartScreen kann beim ersten Start warnen (unsignierte App) — „Weitere Informationen“ → „Trotzdem ausführen“.",
